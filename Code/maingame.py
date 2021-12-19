@@ -3,6 +3,7 @@ from sympy import *
 import numpy as np
 import scipy.optimize as opt
 import pygame
+from PDneu import *
 
 
 #1 (see def ballgeodesic)
@@ -55,29 +56,81 @@ def topygamecoords(xcord, ycord):
 def topygameradius(radius):
     return 300*radius
 
+def xy_to_PD(x,y):
+    z = PDPoint(complex(x,y))
+    return(z)
+
+def PD_to_xy(point):
+    x = point.getReal()
+    y = point.getImag()
+    return((x,y))
+
 def newballpos(center_x, center_y, radius, t):
     newballpos = [center_x + radius*cos(2*pi*t), center_y + radius*sin(2*pi*t)]
     return newballpos
 
-#helppoint not done because it doesnt keep in mind the orthogonal of the wall
-def helppoint(solution_x, solution_y, center_x, center_y):
-    global helppoint_x, helppoint_y
+def helptangent(variables):
+    (x,y) = variables
 
-    n = (center_y - solution_y)/(center_x - solution_x)
-    m = 1/n
-    k = solution_y - m*solution_x
-    if center_x == walldowncenter_x and center_y == walldowncenter_y :
-        helppoint_y = -0.5
-        helppoint_x = (-0.5-k)/m - 0.2
-    elif center_x == wallupcenter_x and center_y == wallupcenter_y :
-            helppoint_y = 0.5
-            helppoint_x = (0.5-k)/m + 0.2
-    elif center_x == wallplayer1center_x and center_y == wallplayer1center_y :
-            helppoint_x = -0.5
-            helppoint_y = (-0.5-k)/m + 0.2
-    elif center_x == wallplayer2center_x and center_y == wallplayer2center_y :
-            helppoint_x = 0.5
-            helppoint_y = (0.5-k)/m - 0.2
+    first_eq = (x - ballgeodesiccenter_x)**2 + (y-ballgeodesiccenter_y)**2 - ballgeodesicradius**2
+    second_eq = m_tangent*x + b_tangent - y
+    return [first_eq, second_eq]
+
+#helppoint used to find next geodesic
+def helppoint(solution_x, solution_y, center_x, center_y):
+    global helppoint_x, helppoint_y, b_tangent, m_tangent
+    if center_x - solution_x != 0 and center_y - solution_y != 0:
+        n = (center_y - solution_y)/(center_x - solution_x) #orthogonal
+        b_orthgonal = solution_y - n*solution_x
+        m_tangent = 1/n #tangent
+        if center_x == walldowncenter_x and center_y == walldowncenter_y :
+            b_tangent = solution_y - m_tangent*solution_x + 0.1
+            helpsolve = opt.fsolve(helptangent, (solution_x,solution_y))
+            orthintersect_y = m_tangent*(b_orthogonal - b_tangent)/(m_tangent - n) + b_tangent
+            orthintersect_x = (b_orthogonal - b_tangent)/(m_tangent - n)
+            helppoint_y = 2*orthintersect_y - helpsolve[1]
+            helppoint_x = 2*orthintersect_x - helpsolve[0]
+        elif center_x == wallupcenter_x and center_y == wallupcenter_y :
+            b_tangent = solution_y - m_tangent*solution_x - 0.1
+            helpsolve = opt.fsolve(helptangent, (solution_x,solution_y))
+            orthintersect_y = m_tangent*(b_orthogonal - b_tangent)/(m_tangent - n) + b_tangent
+            orthintersect_x = (b_orthogonal - b_tangent)/(m_tangent - n)
+            helppoint_y = 2*orthintersect_y - helpsolve[1]
+            helppoint_x = 2*orthintersect_x - helpsolve[0]
+        elif center_x == wallplayer1center_x and center_y == wallplayer1center_y :
+            b_tangent = solution_y - m_tangent*solution_x - 0.1
+            helpsolve = opt.fsolve(helptangent, (solution_x,solution_y))
+            orthintersect_y = m_tangent*(b_orthogonal - b_tangent)/(m_tangent - n) + b_tangent
+            orthintersect_x = (b_orthogonal - b_tangent)/(m_tangent - n)
+            helppoint_y = 2*orthintersect_y - helpsolve[1]
+            helppoint_x = 2*orthintersect_x - helpsolve[0]
+        elif center_x == wallplayer2center_x and center_y == wallplayer2center_y :
+            b_tangent = solution_y - m_tangent*solution_x + 0.1
+            helpsolve = opt.fsolve(helptangent, (solution_x,solution_y))
+            orthintersect_y = m_tangent*(b_orthogonal - b_tangent)/(m_tangent - n) + b_tangent
+            orthintersect_x = (b_orthogonal - b_tangent)/(m_tangent - n)
+            helppoint_y = 2*orthintersect_y - helpsolve[1]
+            helppoint_x = 2*orthintersect_x - helpsolve[0]
+    elif center_y - solution_y == 0:
+            if center_x == wallplayer1center_x and center_y == wallplayer1center_y :
+                helppoint_x = solution_x + 0.1
+                helppoint_y = 2*(solution_y) - sqrt(ballgeodesicradius**2 - (solution_x + 0.1 - ballgeodesiccenter_x)**2) - ballgeodesiccenter_y
+            elif center_x == wallplayer2center_x and center_y == wallplayer2center_y :
+                helppoint_x = solution_x - 0.1
+                helppoint_y = 2*(solution_y) - sqrt(ballgeodesicradius**2 - (solution_x - 0.1 - ballgeodesiccenter_x)**2) - ballgeodesiccenter_y
+            else:
+                print("Something went very wrong.")
+    elif center_x - solution_x == 0:
+                if center_x == walldowncenter_x and center_y == walldowncenter_y :
+                    helppoint_y = solution_y + 0.1
+                    helppoint_x = 2*(solution_x) - sqrt(ballgeodesicradius**2 - (solution_y + 0.1 - ballgeodesiccenter_y)**2) - ballgeodesiccenter_x
+                elif center_x == wallupcenter_x and center_y == wallupcenter_y :
+                    helppoint_y = solution_y - 0.1
+                    helppoint_x = 2*(solution_x) - sqrt(ballgeodesicradius**2 - (solution_y + 0.1 - ballgeodesiccenter_y)**2) - ballgeodesiccenter_x
+                else:
+                    print("Something went very wrong.")
+
+
 
 def wallupintersection(variables):
     (x,y) = variables
@@ -107,33 +160,52 @@ def wallplayer2intersection(variables):
     second_eq = (x-ballgeodesiccenter_x)**2+(y-ballgeodesiccenter_y)**2 - ballgeodesicradius**2
     return [first_eq, second_eq]
 
+
 #function to change current ballgeodesic
 def ballgeodesic(wall):
-    global ballgeodesiccenter_x, ballgeodesiccenter_y
+    global ballgeodesiccenter_x, ballgeodesiccenter_y, ballgeodesicradius
     #see numeration of walls
     if wall == 1:
         helppoint(solution_x, solution_y, wallupcenter_x, wallupcenter_y)
-        center = opt.fsolve(findcenter, (1,0.1))
-        ballgeodesiccenter_x = center[0]
-        ballgeodesiccenter_y = center[1]
+        p1 = PDPoint(xy_to_PD(solution_x,solution_y))
+        p2 = PDPoint(xy_to_PD(helppoint_x,helppoint_y))
+        g = PDGeodesic(p1,p2)
+        center = g._center.getComplex()
+        ballgeodesiccenter_x = center.real
+        ballgeodesiccenter_y = center.imag
+        ballgeodesicradius = g._radius
         wall = 2
     elif wall == 2:
         helppoint(solution_x, solution_y, wallplayer2center_x, wallplayer2center_y)
-        center = opt.fsolve(findcenter, (0.1,-1))
-        ballgeodesiccenter_x = center[0]
-        ballgeodesiccenter_y = center[1]
+        p1 = PDPoint(xy_to_PD(solution_x,solution_y))
+        p2 = PDPoint(xy_to_PD(helppoint_x,helppoint_y))
+        g = PDGeodesic(p1,p2)
+        center = g._center.getComplex()
+        print(center)
+        ballgeodesiccenter_x = center.real
+        ballgeodesiccenter_y = center.imag
+        ballgeodesicradius = g._radius
+        print(g._radius)
         #wall = 3
     elif wall == 3:
         helppoint(solution_x, solution_y, walldowncenter_x, walldowncenter_y)
-        center = opt.fsolve(findcenter, (-1,0.1))
-        ballgeodesiccenter_x = center[0]
-        ballgeodesiccenter_y = center[1]
+        p1 = PDPoint(xy_to_PD(solution_x,solution_y))
+        p2 = PDPoint(xy_to_PD(helppoint_x,helppoint_y))
+        g = PDGeodesic(p1,p2)
+        center = g._center.getComplex()
+        ballgeodesiccenter_x = center.real
+        ballgeodesiccenter_y = center.imag
+        ballgeodesicradius = g._radius
         wall = 4
     elif wall == 4:
         helppoint(solution_x, solution_y, wallplayer1center_x, wallplayer1center_y)
-        center = opt.fsolve(findcenter, (0.1,1))
-        ballgeodesiccenter_x = center[0]
-        ballgeodesiccenter_y = center[1]
+        p1 = PDPoint(xy_to_PD(solution_x,solution_y))
+        p2 = PDPoint(xy_to_PD(helppoint_x,helppoint_y))
+        g = PDGeodesic(p1,p2)
+        center = g._center.getComplex()
+        ballgeodesiccenter_x = center.real
+        ballgeodesiccenter_y = center.imag
+        ballgeodesicradius = g._radius
         wall = 1
     else:
         print("ERROR input must be in the set of {1,2,3,4}")
@@ -196,27 +268,29 @@ while gameactive:
     ballradius = ball_radius(ballpos[0], ballpos[1])
 
     if wall == 1 and ballpos[1] - ballradius <= nextintersection[1]:
-        #ballgeodesic(wall)
-        #sound.play()
         solution = opt.fsolve(wallplayer2intersection, (0.1,1))
         nextintersection = topygamecoords(solution[0],solution[1])
+        ballgeodesic(wall)
+        #sound.play()
         wall = 2
         direction = direction * -1
     elif wall ==2 and ballpos[0] + ballradius >= nextintersection[0]:
-        #ballgeodesic(wall)
         #sound.play()
-        solution = opt.fsolve(wallupintersection, (0.1,1))
+        solution = opt.fsolve(walldownintersection, (0.1,1))
         nextintersection = topygamecoords(solution[0],solution[1])
-        wall = 1
+        ballgeodesic(wall)
+        wall = 3
         direction = direction * -1
     elif wall == 3 and ballpos[1] - ballradius >= nextintersection[1]:
+        solution = opt.fsolve(wallplayer2intersection, (0.1,1))
+        nextintersection = topygamecoords(solution[0],solution[1])
         ballgeodesic(wall)
-        nextintersection1 = opt.fsolve(wallplayer1intersection, (0.1,1))
         wall = 4
         direction = direction * -1
     elif wall == 4 and ballpos[0] - ballradius <= nextintersection1[0]:
+        solution = opt.fsolve(wallupintersection, (0.1,1))
+        nextintersection = topygamecoords(solution[0],solution[1])
         ballgeodesic(wall)
-        nextintersection1 = opt.fsolve(walldownintersection, (0.1,1))
         wall = 1
         direction = direction * -1
 
