@@ -11,9 +11,9 @@ def isApproxReal(z, eps : float = 1.0e-8):
     if type(z) is int or type(z) is float:
         return True
     if type(z) is complex:
-        return (z.imag < eps)
+        return (abs(z.imag) < eps)
     elif type(z) is PDPoint:
-        return (z.getImagPart() < eps)
+        return (abs(z.getImagPart()) < eps)
     else:
         raise TypeError("Cannot check if an object of type '{}' is approximatly a real number.".format(type(z)))
 
@@ -215,7 +215,7 @@ class PDGeodesic(PDObject):
     ###############################################
     # TODO
     def __isdiameter(self):
-        if self._point1.isZero() or isApproxReal(self._point2 / self._point1)==True: return True
+        if self._point1.isZero()== True or isApproxReal(self._point2 / self._point1)==True: return True
         else: return False
 
     def __calculate(self):
@@ -259,9 +259,8 @@ class PDGeodesic(PDObject):
 
                 self._center = M + m_dir * t
                 self._radius = abs(P - self._center)
-                print(self._center)
-                print(self._radius)
-
+                #print(self._center)
+                #print(self._radius)
 
 
     ###############################################

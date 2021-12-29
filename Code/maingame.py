@@ -34,8 +34,7 @@ helppoint_x = 0
 helppoint_y = 0
 
 # represents the point of the current intersection point with one of the walls
-solution_x = 0
-solution_y = 0
+
 
 def distance(z0,z1):
     distance = cmath.acosh(1+2*(abs(z0-z1)**2)/((1-abs(z0)**2)*(1-abs(z1)**2)))
@@ -81,7 +80,7 @@ def helppoint(solution_x, solution_y, center_x, center_y):
     global helppoint_x, helppoint_y, b_tangent, m_tangent
     if center_x - solution_x != 0 and center_y - solution_y != 0:
         n = (center_y - solution_y)/(center_x - solution_x) #orthogonal
-        b_orthgonal = solution_y - n*solution_x
+        b_orthogonal = solution_y - n*solution_x
         m_tangent = 1/n #tangent
         if center_x == walldowncenter_x and center_y == walldowncenter_y :
             b_tangent = solution_y - m_tangent*solution_x + 0.1
@@ -160,14 +159,18 @@ def wallplayer2intersection(variables):
     second_eq = (x-ballgeodesiccenter_x)**2+(y-ballgeodesiccenter_y)**2 - ballgeodesicradius**2
     return [first_eq, second_eq]
 
+# represents the point of the current intersection point with one of the walls
+solution = opt.fsolve(wallplayer2intersection, (0.1,1) )
+nextintersection = topygamecoords(solution[0], solution[1])
+wall = 2 #variable to what wall the ball moves
 
 #function to change current ballgeodesic
 def ballgeodesic(wall):
     global ballgeodesiccenter_x, ballgeodesiccenter_y, ballgeodesicradius
     #see numeration of walls
     if wall == 1:
-        helppoint(solution_x, solution_y, wallupcenter_x, wallupcenter_y)
-        p1 = PDPoint(xy_to_PD(solution_x,solution_y))
+        helppoint(solution[0], solution[1], wallupcenter_x, wallupcenter_y)
+        p1 = PDPoint(xy_to_PD(solution[0],solution[1]))
         p2 = PDPoint(xy_to_PD(helppoint_x,helppoint_y))
         g = PDGeodesic(p1,p2)
         center = g._center.getComplex()
@@ -176,21 +179,25 @@ def ballgeodesic(wall):
         ballgeodesicradius = g._radius
         wall = 2
     elif wall == 2:
-        helppoint(solution_x, solution_y, wallplayer2center_x, wallplayer2center_y)
-        p1 = PDPoint(xy_to_PD(solution_x,solution_y))
-        p2 = PDPoint(xy_to_PD(helppoint_x,helppoint_y))
+        helppoint(solution[0], solution[1], wallplayer2center_x, wallplayer2center_y)
+        print(solution[0], " ", solution[1])
+        print(helppoint_x, " ", helppoint_y)
+        p1 = xy_to_PD(solution[0],solution[1])
+        p2 = xy_to_PD(helppoint_x,helppoint_y)
+        print("P1, P2:" ,p1, " ", p2)
         g = PDGeodesic(p1,p2)
         center = g._center.getComplex()
-        print(center)
+        print("Center: ", center)
         ballgeodesiccenter_x = center.real
         ballgeodesiccenter_y = center.imag
+        print("Center:" , ballgeodesiccenter_x, " ", ballgeodesiccenter_y)
         ballgeodesicradius = g._radius
         print(g._radius)
         #wall = 3
     elif wall == 3:
-        helppoint(solution_x, solution_y, walldowncenter_x, walldowncenter_y)
-        p1 = PDPoint(xy_to_PD(solution_x,solution_y))
-        p2 = PDPoint(xy_to_PD(helppoint_x,helppoint_y))
+        helppoint(solution[0], solution[1], walldowncenter_x, walldowncenter_y)
+        p1 = xy_to_PD(solution[0],solution[1])
+        p2 = xy_to_PD(helppoint_x,helppoint_y)
         g = PDGeodesic(p1,p2)
         center = g._center.getComplex()
         ballgeodesiccenter_x = center.real
@@ -198,9 +205,9 @@ def ballgeodesic(wall):
         ballgeodesicradius = g._radius
         wall = 4
     elif wall == 4:
-        helppoint(solution_x, solution_y, wallplayer1center_x, wallplayer1center_y)
-        p1 = PDPoint(xy_to_PD(solution_x,solution_y))
-        p2 = PDPoint(xy_to_PD(helppoint_x,helppoint_y))
+        helppoint(solution[0], solution[1], wallplayer1center_x, wallplayer1center_y)
+        p1 = xy_to_PD(solution[0],solution[1])
+        p2 = xy_to_PD(helppoint_x,helppoint_y)
         g = PDGeodesic(p1,p2)
         center = g._center.getComplex()
         ballgeodesiccenter_x = center.real
@@ -216,9 +223,7 @@ def ball_radius(x,y):
     else:
         return round(15-(15*sqrt((x - 401)**2 + (y- 401)**2))/300)
 
-solution = opt.fsolve(wallplayer2intersection, (0.1,1) )
-nextintersection = topygamecoords(solution[0], solution[1])
-wall = 2 #variable to what wall the ball moves
+
 
 # initialising pygame
 pygame.init()
@@ -287,7 +292,7 @@ while gameactive:
         ballgeodesic(wall)
         wall = 4
         direction = direction * -1
-    elif wall == 4 and ballpos[0] - ballradius <= nextintersection1[0]:
+    elif wall == 4 and ballpos[0] - ballradius <= nextintersection[0]:
         solution = opt.fsolve(wallupintersection, (0.1,1))
         nextintersection = topygamecoords(solution[0],solution[1])
         ballgeodesic(wall)
