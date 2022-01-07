@@ -3,8 +3,46 @@ from sympy import *
 import numpy as np
 import scipy.optimize as opt
 import pygame
+import warnings
 from PDneu import *
 
+# initialising pygame
+pygame.init()
+#pygame.mixer.init()
+#add sound
+#sound = pygame.mixer.Sound('meow.mp3')
+
+# colours used
+orange  = ( 200, 140, 0)
+red     = ( 153, 0, 0)
+green   = ( 0, 153, 0)
+blue = ( 0, 0, 153)
+black = ( 0, 0, 0)
+white   = ( 255, 255, 255)
+
+width = 801
+height = 801
+
+#keeps track of the scores
+score_value_player1 = 0
+score_value_player2 = 0
+font = pygame.font.Font('freesansbold.ttf', 32)
+
+# open window
+screen = pygame.display.set_mode((width, height))
+
+# title
+pygame.display.set_caption("Ping Pong")
+
+# solange die Variable True ist, soll das Spiel laufen
+gameactive = True
+
+# Bildschirm Aktualisierungen einstellen
+clock = pygame.time.Clock()
+
+ball_colour = white
+movement = 0.5
+direction = 1
 
 #1 (see def ballgeodesic)
 wallupcenter_x = 0
@@ -32,9 +70,6 @@ ballgeodesicradius = sqrt(1.5)
 #needed to find next ballgeodesic
 helppoint_x = 0
 helppoint_y = 0
-
-# represents the point of the current intersection point with one of the walls
-
 
 def distance(z0,z1):
     distance = cmath.acosh(1+2*(abs(z0-z1)**2)/((1-abs(z0)**2)*(1-abs(z1)**2)))
@@ -129,8 +164,6 @@ def helppoint(solution_x, solution_y, center_x, center_y):
                 else:
                     print("Something went very wrong.")
 
-
-
 def wallupintersection(variables):
     (x,y) = variables
 
@@ -161,6 +194,7 @@ def wallplayer2intersection(variables):
 
 # represents the point of the current intersection point with one of the walls
 solution = opt.fsolve(wallplayer2intersection, (0.1,1) )
+oldsolution = solution
 nextintersection = topygamecoords(solution[0], solution[1])
 wall = 2 #variable to what wall the ball moves
 
@@ -219,6 +253,47 @@ def ball_radius(x,y):
     else:
         return round(15-(15*sqrt((x - 401)**2 + (y- 401)**2))/300)
 
+#we need to find the wall of the nextintersection
+def findsolution():
+    global wall, solution
+    warnings.simplefilter('error', RuntimeWarning)
+    lastwall = wall
+    if lastwall == 1:
+        try:
+            wall = 2
+            solution = opt.fsolve(wallplayer2intersection, (0.1,0.1))
+            print("try")
+        except RuntimeWarning:
+            wall = 3
+            soltion = opt.fsolve(walldownintersection, (0.1,0.1))
+            print("except")
+    elif lastwall == 2:
+        try:
+            wall = 3
+            solution = opt.fsolve(walldownintersection, (0.1,0.1))
+            print("try")
+        except RuntimeWarning:
+            wall = 4
+            solution = opt.fsolve(wallplayer1intersection, (0.1,0.1))
+            print("except")
+    elif lastwall == 3:
+        try:
+            wall = 4
+            solution = opt.fsolve(wallplayer1intersection, (0.1,0.1))
+            print("try")
+        except RuntimeWarning:
+            wall = 1
+            solution = opt.fsolve(wallupintersection, (0.1,0.1))
+            print("except")
+    elif lastwall == 4:
+        try:
+            wall = 1
+            solution = opt.fsolve(wallupintersection, (0.1,0.1))
+            print("try")
+        except RuntimeWarning:
+            wall = 2
+            solution = opt.fsolve(wallplayer2intersection, (0.1,0.1))
+            print("except")
 
 def findnewmovement(variables):
     t = variables
@@ -227,40 +302,13 @@ def findnewmovement(variables):
     second_eq = oldsolution[1] - ballgeodesiccenter_y - ballgeodesicradius*sin(2*pi*t)
     return [first_eq, second_eq]
 
+def show_score(x, y):
+    score = font.render(str(score_value_player1) + " : " + str(score_value_player2), True, (255, 255, 255))
+    screen.blit(score, (x, y))
 
-# initialising pygame
-pygame.init()
-#pygame.mixer.init()
-#add sound
-#sound = pygame.mixer.Sound('meow.mp3')
-
-# colours used
-orange  = ( 200, 140, 0)
-red     = ( 153, 0, 0)
-green   = ( 0, 153, 0)
-blue = ( 0, 0, 153)
-black = ( 0, 0, 0)
-white   = ( 255, 255, 255)
-
-width = 801
-height = 801
-
-# open window
-screen = pygame.display.set_mode((width, height))
-
-# title
-pygame.display.set_caption("Ping Pong")
-
-# solange die Variable True ist, soll das Spiel laufen
-gameactive = True
-
-# Bildschirm Aktualisierungen einstellen
-clock = pygame.time.Clock()
-
-ball_colour = white
-movement = 0.5
-direction = 1
-#ballradius = 10
+def game_over_text():
+    over_text = over_font.render("GAME OVER", True, (255, 255, 255))
+    screen.blit(over_text, (200, 250))
 
 # loop of main programm
 while gameactive:
@@ -278,34 +326,30 @@ while gameactive:
     #Problem: movement needs to be switched so we need to find the fitting t of the new geodesic so they connect so findnewmovement needs to be fixed
     if wall == 1 and ballpos[1] - ballradius >= nextintersection[1]:
         ballgeodesic(wall)
-        solution = opt.fsolve(wallplayer2intersection, (0.1,0.1))
-        movement += 0.5
+        oldsolution = solution
+        findsolution()
+        #movement += opt.fsolve(findnewmovement, 0.1)
         nextintersection = topygamecoords(solution[0],solution[1])
         #sound.play()
-        wall = 2
-    elif wall ==2 and ballpos[0] + ballradius >= nextintersection[0]:
-        print("first Solution:", solution)
+    elif wall == 2 and ballpos[0] + ballradius >= nextintersection[0]:
         #sound.play()
         ballgeodesic(wall)
-        solution = opt.fsolve(walldownintersection, (0.1,0.1))
-        print("Solution:", solution)
-        movement += 0.5
+        oldsolution = solution
+        findsolution()
+        #movement += opt.fsolve(findnewmovement, 0.1)
         nextintersection = topygamecoords(solution[0],solution[1])
-        wall = 3
     elif wall == 3 and ballpos[1] - ballradius <= nextintersection[1]:
         ballgeodesic(wall)
-        solution = opt.fsolve(wallplayer1intersection, (0.1,0.1))
-        movement += 0.5
+        oldsolution = solution
+        findsolution()
+        #movement += opt.fsolve(findnewmovement, 0.1)
         nextintersection = topygamecoords(solution[0],solution[1])
-        wall = 4
     elif wall == 4 and ballpos[0] - ballradius <= nextintersection[0]:
         ballgeodesic(wall)
-        solution = opt.fsolve(wallupintersection, (0.1,0.1))
-        movement += 0.5
+        oldsolution = solution
+        findsolution()
+        #movement += opt.fsolve(findnewmovement, 0.1)
         nextintersection = topygamecoords(solution[0],solution[1])
-        wall = 1
-
-
 
     # delete gamefield
     screen.fill(black)
@@ -318,9 +362,9 @@ while gameactive:
     pygame.draw.circle(screen, blue,[topygamecoords(1.75,0)[0],topygamecoords(1.75,0)[1]],topygameradius(wallradius),5)
     pygame.draw.circle(screen, ball_colour, [ballpos[0], ballpos[1]], ballradius)
 
-
+    show_score(360, 10)
     # refresh Window
-    pygame.display.flip()
+    pygame.display.update()
 
     # set refreshing time
     clock.tick(60)#normal 60
