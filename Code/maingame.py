@@ -12,7 +12,7 @@ pygame.init()
 #add sound
 #sound = pygame.mixer.Sound('meow.mp3')
 
-# colors used 
+# colours used 
 orange  = ( 200, 140, 0)
 red     = ( 153, 0, 0)
 green   = ( 0, 153, 0)
