@@ -1,48 +1,13 @@
+import sys 
 import cmath
+import math
 from sympy import *
 import numpy as np
 import scipy.optimize as opt
 import pygame
-import warnings
+from pygame import *
+from pygame.locals import *
 from PDneu import *
-
-# initialising pygame
-pygame.init()
-#pygame.mixer.init()
-#add sound
-#sound = pygame.mixer.Sound('meow.mp3')
-
-# colours used 
-orange  = ( 200, 140, 0)
-red     = ( 153, 0, 0)
-green   = ( 0, 153, 0)
-blue = ( 0, 0, 153)
-black = ( 0, 0, 0)
-white   = ( 255, 255, 255)
-
-width = 801
-height = 801
-
-#keeps track of the scores
-score_value_player1 = 0
-score_value_player2 = 0
-font = pygame.font.Font('freesansbold.ttf', 32)
-
-# open window
-screen = pygame.display.set_mode((width, height))
-
-# title
-pygame.display.set_caption("Ping Pong")
-
-# solange die Variable True ist, soll das Spiel laufen
-gameactive = True
-
-# Bildschirm Aktualisierungen einstellen
-clock = pygame.time.Clock()
-
-ball_colour = white
-movement = 0.5
-direction = 1
 
 #1 (see def ballgeodesic)
 wallupcenter_x = 0
@@ -67,18 +32,23 @@ ballgeodesiccenter_x = 1
 ballgeodesiccenter_y = 1
 ballgeodesicradius = sqrt(1.5)
 
-#needed to find next ballgeodesic
+#needed to find next ballgeodesic/2nd point of the new ballgeodesic
 helppoint_x = 0
 helppoint_y = 0
+
+# represents the point of the current intersection point with one of the walls
+
 
 def distance(z0,z1):
     distance = cmath.acosh(1+2*(abs(z0-z1)**2)/((1-abs(z0)**2)*(1-abs(z1)**2)))
     return distance
 
 def findcenter(variables):
+    
+    #needed center
     (x,y) = variables
 
-    eq1 = (solution_x-x)**2+(solution_y-y)**2 - ballgeodesicradius**2
+    #eq of the circle (x-m1)²+(y-m2)²=r²
     eq2 = (helppoint_x-x)**2+(helppoint_y-y)**2 - ballgeodesicradius**2
     return [eq1, eq2]
 
@@ -164,6 +134,8 @@ def helppoint(solution_x, solution_y, center_x, center_y):
                 else:
                     print("Something went very wrong.")
 
+
+
 def wallupintersection(variables):
     (x,y) = variables
 
@@ -194,7 +166,6 @@ def wallplayer2intersection(variables):
 
 # represents the point of the current intersection point with one of the walls
 solution = opt.fsolve(wallplayer2intersection, (0.1,1) )
-oldsolution = solution
 nextintersection = topygamecoords(solution[0], solution[1])
 wall = 2 #variable to what wall the ball moves
 
@@ -253,47 +224,6 @@ def ball_radius(x,y):
     else:
         return round(15-(15*sqrt((x - 401)**2 + (y- 401)**2))/300)
 
-#we need to find the wall of the nextintersection
-def findsolution():
-    global wall, solution
-    warnings.simplefilter('error', RuntimeWarning)
-    lastwall = wall
-    if lastwall == 1:
-        try:
-            wall = 2
-            solution = opt.fsolve(wallplayer2intersection, (0.1,0.1))
-            print("try")
-        except RuntimeWarning:
-            wall = 3
-            soltion = opt.fsolve(walldownintersection, (0.1,0.1))
-            print("except")
-    elif lastwall == 2:
-        try:
-            wall = 3
-            solution = opt.fsolve(walldownintersection, (0.1,0.1))
-            print("try")
-        except RuntimeWarning:
-            wall = 4
-            solution = opt.fsolve(wallplayer1intersection, (0.1,0.1))
-            print("except")
-    elif lastwall == 3:
-        try:
-            wall = 4
-            solution = opt.fsolve(wallplayer1intersection, (0.1,0.1))
-            print("try")
-        except RuntimeWarning:
-            wall = 1
-            solution = opt.fsolve(wallupintersection, (0.1,0.1))
-            print("except")
-    elif lastwall == 4:
-        try:
-            wall = 1
-            solution = opt.fsolve(wallupintersection, (0.1,0.1))
-            print("try")
-        except RuntimeWarning:
-            wall = 2
-            solution = opt.fsolve(wallplayer2intersection, (0.1,0.1))
-            print("except")
 
 def findnewmovement(variables):
     t = variables
@@ -302,13 +232,78 @@ def findnewmovement(variables):
     second_eq = oldsolution[1] - ballgeodesiccenter_y - ballgeodesicradius*sin(2*pi*t)
     return [first_eq, second_eq]
 
-def show_score(x, y):
-    score = font.render(str(score_value_player1) + " : " + str(score_value_player2), True, (255, 255, 255))
-    screen.blit(score, (x, y))
+def blitRotate(surf, image, pos, originPos, angle):
+    # offset from pivot to center
+    image_rect = image.get_rect(topleft = (pos[0] - originPos[0], pos[1]-originPos[1]))
+    offset_center_to_pivot = pygame.math.Vector2(pos) - image_rect.center
+ 
+    # roatated offset from pivot to center
+    rotated_offset = offset_center_to_pivot.rotate(-angle)
 
-def game_over_text():
-    over_text = over_font.render("GAME OVER", True, (255, 255, 255))
-    screen.blit(over_text, (200, 250))
+    # rotated image center
+    rotated_image_center = (pos[0] - rotated_offset.x, pos[1] - rotated_offset.y)
+
+    # get a rotated image
+    rotated_image = pygame.transform.rotate(image, angle)
+    rotated_image_rect = rotated_image.get_rect(center = rotated_image_center)
+ 
+    # rotate and blit the image
+    surf.blit(rotated_image, rotated_image_rect)
+
+# initialising pygame
+pygame.init()
+#pygame.mixer.init()
+#add sound
+#sound = pygame.mixer.Sound('meow.mp3')
+
+# colours used
+orange  = ( 200, 140, 0)
+red     = ( 153, 0, 0)
+green   = ( 0, 153, 0)
+blue = ( 0, 0, 153)
+black = ( 0, 0, 0)
+white   = ( 255, 255, 255)
+
+width = 801
+height = 801
+
+# open window
+screen = pygame.display.set_mode((width, height))
+
+# title
+pygame.display.set_caption("Ping Pong")
+
+#game runs as long as this is true
+gameactive = True
+
+# Bildschirm Aktualisierungen einstellen
+clock = pygame.time.Clock()
+
+ball_colour = white
+movement = 0.5
+direction = 1
+#ballradius = 10
+
+x1=topygamecoords(-1.4,0)[0]
+y1=topygamecoords(-1.4,0)[1]
+
+angle1 = 0
+angle_rot = 0
+
+try:
+    image = pygame.image.load('paddle.jpg')
+    image = pygame.transform.scale(image, (200,100))
+    #should be perpendicular at the beginning
+    image = pygame.transform.rotate(image,90)
+    image.set_colorkey((0,0,0))
+except:
+    text = pygame.font.SysFont('Times New Roman', 50).render('image', False, (255, 255,     0))
+    image = pygame.Surface((text.get_width()+1, text.get_height()+1))
+    pygame.draw.rect(image, (0, 0, 255), (1, 1, *text.get_size()))
+    image.blit(text, (1, 1))
+w, h = image.get_size()
+
+screen.blit(image,(200,401))
 
 # loop of main programm
 while gameactive:
@@ -316,6 +311,7 @@ while gameactive:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             gameactive = False
+            sys.exit()
 
     # integrate game logic here
     helpballpos = newballpos(ballgeodesiccenter_x, ballgeodesiccenter_y, ballgeodesicradius, movement)
@@ -326,48 +322,77 @@ while gameactive:
     #Problem: movement needs to be switched so we need to find the fitting t of the new geodesic so they connect so findnewmovement needs to be fixed
     if wall == 1 and ballpos[1] - ballradius >= nextintersection[1]:
         ballgeodesic(wall)
-        oldsolution = solution
-        findsolution()
-        #movement += opt.fsolve(findnewmovement, 0.1)
+        solution = opt.fsolve(wallplayer2intersection, (0.1,0.1))
+        movement += 0.5
         nextintersection = topygamecoords(solution[0],solution[1])
         #sound.play()
-    elif wall == 2 and ballpos[0] + ballradius >= nextintersection[0]:
+        wall = 2
+    elif wall ==2 and ballpos[0] + ballradius >= nextintersection[0]:
+        print("first Solution:", solution)
         #sound.play()
         ballgeodesic(wall)
-        oldsolution = solution
-        findsolution()
-        #movement += opt.fsolve(findnewmovement, 0.1)
+        solution = opt.fsolve(walldownintersection, (0.1,0.1))
+        print("Solution:", solution)
+        movement += 0.5
         nextintersection = topygamecoords(solution[0],solution[1])
+        wall = 3
     elif wall == 3 and ballpos[1] - ballradius <= nextintersection[1]:
         ballgeodesic(wall)
-        oldsolution = solution
-        findsolution()
-        #movement += opt.fsolve(findnewmovement, 0.1)
+        solution = opt.fsolve(wallplayer1intersection, (0.1,0.1))
+        movement += 0.5
         nextintersection = topygamecoords(solution[0],solution[1])
+        wall = 4
     elif wall == 4 and ballpos[0] - ballradius <= nextintersection[0]:
         ballgeodesic(wall)
-        oldsolution = solution
-        findsolution()
-        #movement += opt.fsolve(findnewmovement, 0.1)
+        solution = opt.fsolve(wallupintersection, (0.1,0.1))
+        movement += 0.5
         nextintersection = topygamecoords(solution[0],solution[1])
+        wall = 1
+
+
 
     # delete gamefield
     screen.fill(black)
 
     # draw gamefield and figures
     pygame.draw.circle(screen, orange, [401,401],300)
+
+    #paddles
+    
+    #try to move a paddle
+    #newballpos(center_x, center_y, radius, t): newballpos = [center_x + radius*cos(2*pi*t), center_y + radius*sin(2*pi*t)]
+    #pygame.draw.arc(screen, green, (p1, p2, 70, 65),0, cmath.pi/2,5)
+    
+    #c1=newballpos(x1,y1,300,angle1)
+    #rect1=pygame.draw.rect(screen, "green",(c1[0], c1[1],50,50))
+    #key_input=pygame.key.get_pressed()
+    #if key_input[pygame.K_w]:
+    #  angle1 -= 0.01
+    #if key_input[pygame.K_s]:
+    #  angle1 += 0.01
+    pos = (screen.get_width()/2, screen.get_height()/2)
+    blitRotate(screen, image, pos, (w/2, h/2), angle_rot)
+    key_input = pygame.key.get_pressed()
+    if key_input[pygame.K_w]:
+        angle_rot += 1
+    if key_input[pygame.K_s]:
+        angle_rot -= 1
+
     pygame.draw.circle(screen, green,[topygamecoords(0,1.75)[0],topygamecoords(0,1.75)[1]],topygameradius(wallradius),5)
     pygame.draw.circle(screen, green,[topygamecoords(0,-1.75)[0],topygamecoords(0,-1.75)[1]],topygameradius(wallradius),5)
     pygame.draw.circle(screen, red,[topygamecoords(-1.75,0)[0],topygamecoords(-1.75,0)[1]],topygameradius(wallradius),5)
     pygame.draw.circle(screen, blue,[topygamecoords(1.75,0)[0],topygamecoords(1.75,0)[1]],topygameradius(wallradius),5)
     pygame.draw.circle(screen, ball_colour, [ballpos[0], ballpos[1]], ballradius)
-
-    show_score(360, 10)
+    pygame.draw.polygon(screen, black, [[0,0],[0,377],[377,0]]) 
+    pygame.draw.polygon(screen, black, [[801,0],[801-377,0],[801,377]]) 
+    pygame.draw.polygon(screen, black, [[0,801],[0,801-377],[377,801]]) 
+    pygame.draw.polygon(screen, black, [[801,801],[801-377,801],[801,801-377]]) 
+   
     # refresh Window
-    pygame.display.update()
+    pygame.display.flip()
 
     # set refreshing time
-    clock.tick(60)#normal 60
+    clock.tick(60)
 
 pygame.quit()
 quit()
