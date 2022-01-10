@@ -388,14 +388,18 @@ while gameactive:
 
     #makes the ball switch geodesics when hitting a wall
     if (ballpos[0] - nextintersection[0])**2 + (ballpos[1] - nextintersection[1])**2 <= ballradius**2:
+        if wall == 2:
+            score_value_player1 += 1
+        if wall == 4:
+            score_value_player2 += 1
         sound.play()
         oldbgc_x = ballgeodesiccenter_x
         oldbgc_y = ballgeodesiccenter_y
-        oldballgeodesicradius = ballgeodesicradius
+        oldbgrad = ballgeodesicradius
         ballgeodesic(wall)
         movement = atan2(solution[1]- ballgeodesiccenter_y, solution[0] - ballgeodesiccenter_x)/(2*pi)
         pseudopos = newballpos(ballgeodesiccenter_x, ballgeodesiccenter_y, ballgeodesicradius, movement + direction * 0.003/ballgeodesicradius)
-        if (pseudopos[0] - oldbgc_x)**2 + (pseudopos[1] - oldbgc_y)**2 < oldballgeodesicradius**2:
+        if (pseudopos[0] - oldbgc_x)**2 + (pseudopos[1] - oldbgc_y)**2 < oldbgrad**2:
             direction *= -1
         oldsolution = solution
         findsolution2()
