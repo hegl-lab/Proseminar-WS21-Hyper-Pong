@@ -63,9 +63,9 @@ wallplayer1center_y = 0
 wallradius = sqrt(1.7)
 
 #Creating first geodesic
-ballgeodesiccenter_x = 1
-ballgeodesiccenter_y = 1
-ballgeodesicradius = sqrt(1.5)
+ballgeodesiccenter_x = 0
+ballgeodesiccenter_y = 0
+ballgeodesicradius = 0
 
 #needed to find next ballgeodesic
 helppoint_x = 0
@@ -111,7 +111,7 @@ def helptangent(variables):
     return [first_eq, second_eq]
 
 #helppoint used to find next geodesic: Build perpendicular line to tangent of the circle trough intersection
-#point of wall geodesic with old ball geodesic, move this tangent along the perpendicular and find helppoint as 
+#point of wall geodesic with old ball geodesic, move this tangent along the perpendicular and find helppoint as
 #reflection of the intersection of tangent and old geodesic along the perpendicular.
 def helppoint(solution_x, solution_y, center_x, center_y):
     global helppoint_x, helppoint_y, b_tangent, m_tangent
@@ -181,6 +181,16 @@ def wallplayer2intersection(variables):
     first_eq = (x-wallplayer2center_x)**2+(y-wallplayer2center_y)**2 - wallradius**2
     second_eq = (x-ballgeodesiccenter_x)**2+(y-ballgeodesiccenter_y)**2 - ballgeodesicradius**2
     return [first_eq, second_eq]
+
+def newgeodesic():
+    global ballgeodesiccenter_x, ballgeodesiccenter_y, ballgeodesicradius
+    p1 = xy_to_PD(0.3, 0.4)
+    p2 = xy_to_PD(0.45, 0.2)
+    g = PDGeodesic(p1,p2)
+    center = g._center.getComplex()
+    ballgeodesiccenter_x = center.real
+    ballgeodesiccenter_y = center.imag
+    ballgeodesicradius = g._radius
 
 #function to change current ballgeodesic
 def ballgeodesic(wall):
@@ -334,6 +344,9 @@ def game_over_text():
     over_text = over_font.render("GAME OVER", True, (255, 255, 255)) #over_font not defined yet
     screen.blit(over_text, (200, 250))
 
+#create a start geodesic
+newgeodesic()
+
 # represents the point of the current intersection point with one of the walls
 solution = opt.fsolve(wallplayer2intersection, (0.1,1) )
 oldsolution = solution
@@ -362,6 +375,7 @@ except:
 w, h = image.get_size()
 
 screen.blit(image,(200,401))
+
 
 # loop of main programm
 while gameactive:
