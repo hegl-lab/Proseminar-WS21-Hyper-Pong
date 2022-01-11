@@ -10,7 +10,7 @@ from PDneu import *
 pygame.init()
 pygame.mixer.init()
 #add sound
-sound = pygame.mixer.Sound('meow.mp3')
+#sound = pygame.mixer.Sound('meow.mp3')
 
 # colours used
 orange  = ( 200, 140, 0)
@@ -110,59 +110,49 @@ def helptangent(variables):
     second_eq = m_tangent*x + b_tangent - y
     return [first_eq, second_eq]
 
-#helppoint used to find next geodesic
+#helppoint used to find next geodesic: Build perpendicular line to tangent of the circle trough intersection
+#point of wall geodesic with old ball geodesic, move this tangent along the perpendicular and find helppoint as 
+#reflection of the intersection of tangent and old geodesic along the perpendicular.
 def helppoint(solution_x, solution_y, center_x, center_y):
     global helppoint_x, helppoint_y, b_tangent, m_tangent
     if center_x - solution_x != 0 and center_y - solution_y != 0:
         n = (center_y - solution_y)/(center_x - solution_x) #orthogonal
         b_orthogonal = solution_y - n*solution_x
         m_tangent = 1/n #tangent
+
         if center_x == walldowncenter_x and center_y == walldowncenter_y :
-            b_tangent = solution_y - m_tangent*solution_x + 0.1
-            helpsolve = opt.fsolve(helptangent, (solution_x,solution_y))
-            orthintersect_y = m_tangent*(b_orthogonal - b_tangent)/(m_tangent - n) + b_tangent
-            orthintersect_x = (b_orthogonal - b_tangent)/(m_tangent - n)
-            helppoint_y = 2*orthintersect_y - helpsolve[1]
-            helppoint_x = 2*orthintersect_x - helpsolve[0]
+            b_tangent = solution_y - m_tangent*solution_x + 0.001
         elif center_x == wallupcenter_x and center_y == wallupcenter_y :
-            b_tangent = solution_y - m_tangent*solution_x - 0.1
-            helpsolve = opt.fsolve(helptangent, (solution_x,solution_y))
-            orthintersect_y = m_tangent*(b_orthogonal - b_tangent)/(m_tangent - n) + b_tangent
-            orthintersect_x = (b_orthogonal - b_tangent)/(m_tangent - n)
-            helppoint_y = 2*orthintersect_y - helpsolve[1]
-            helppoint_x = 2*orthintersect_x - helpsolve[0]
+            b_tangent = solution_y - m_tangent*solution_x - 0.001
         elif center_x == wallplayer1center_x and center_y == wallplayer1center_y :
-            b_tangent = solution_y - m_tangent*solution_x - 0.1
-            helpsolve = opt.fsolve(helptangent, (solution_x,solution_y))
-            orthintersect_y = m_tangent*(b_orthogonal - b_tangent)/(m_tangent - n) + b_tangent
-            orthintersect_x = (b_orthogonal - b_tangent)/(m_tangent - n)
-            helppoint_y = 2*orthintersect_y - helpsolve[1]
-            helppoint_x = 2*orthintersect_x - helpsolve[0]
+            b_tangent = solution_y - m_tangent*solution_x - 0.001
         elif center_x == wallplayer2center_x and center_y == wallplayer2center_y :
-            b_tangent = solution_y - m_tangent*solution_x + 0.1
-            helpsolve = opt.fsolve(helptangent, (solution_x,solution_y))
-            orthintersect_y = m_tangent*(b_orthogonal - b_tangent)/(m_tangent - n) + b_tangent
-            orthintersect_x = (b_orthogonal - b_tangent)/(m_tangent - n)
-            helppoint_y = 2*orthintersect_y - helpsolve[1]
-            helppoint_x = 2*orthintersect_x - helpsolve[0]
+            b_tangent = solution_y - m_tangent*solution_x + 0.001
+
+        helpsolve = opt.fsolve(helptangent, (solution_x,solution_y))
+        orthintersect_y = m_tangent*(b_orthogonal - b_tangent)/(m_tangent - n) + b_tangent
+        orthintersect_x = (b_orthogonal - b_tangent)/(m_tangent - n)
+        helppoint_y = 2*orthintersect_y - helpsolve[1]
+        helppoint_x = 2*orthintersect_x - helpsolve[0]
+
     elif center_y - solution_y == 0:
             if center_x == wallplayer1center_x and center_y == wallplayer1center_y :
-                helppoint_x = solution_x + 0.1
-                helppoint_y = 2*(solution_y) - sqrt(ballgeodesicradius**2 - (solution_x + 0.1 - ballgeodesiccenter_x)**2) - ballgeodesiccenter_y
+                helppoint_x = solution_x + 0.001
+                helppoint_y = 2*(solution_y) - sqrt(ballgeodesicradius**2 - (solution_x + 0.001 - ballgeodesiccenter_x)**2) - ballgeodesiccenter_y
             elif center_x == wallplayer2center_x and center_y == wallplayer2center_y :
-                helppoint_x = solution_x - 0.1
-                helppoint_y = 2*(solution_y) - sqrt(ballgeodesicradius**2 - (solution_x - 0.1 - ballgeodesiccenter_x)**2) - ballgeodesiccenter_y
+                helppoint_x = solution_x - 0.001
+                helppoint_y = 2*(solution_y) - sqrt(ballgeodesicradius**2 - (solution_x - 0.001 - ballgeodesiccenter_x)**2) - ballgeodesiccenter_y
             else:
                 print("Something went very wrong.")
     elif center_x - solution_x == 0:
-                if center_x == walldowncenter_x and center_y == walldowncenter_y :
-                    helppoint_y = solution_y + 0.1
-                    helppoint_x = 2*(solution_x) - sqrt(ballgeodesicradius**2 - (solution_y + 0.1 - ballgeodesiccenter_y)**2) - ballgeodesiccenter_x
-                elif center_x == wallupcenter_x and center_y == wallupcenter_y :
-                    helppoint_y = solution_y - 0.1
-                    helppoint_x = 2*(solution_x) - sqrt(ballgeodesicradius**2 - (solution_y + 0.1 - ballgeodesiccenter_y)**2) - ballgeodesiccenter_x
-                else:
-                    print("Something went very wrong.")
+            if center_x == walldowncenter_x and center_y == walldowncenter_y :
+                helppoint_y = solution_y + 0.001
+                helppoint_x = 2*(solution_x) - sqrt(ballgeodesicradius**2 - (solution_y + 0.001 - ballgeodesiccenter_y)**2) - ballgeodesiccenter_x
+            elif center_x == wallupcenter_x and center_y == wallupcenter_y :
+                helppoint_y = solution_y - 0.001
+                helppoint_x = 2*(solution_x) - sqrt(ballgeodesicradius**2 - (solution_y + 0.001 - ballgeodesiccenter_y)**2) - ballgeodesiccenter_x
+            else:
+                print("Something went very wrong.")
 
 def wallupintersection(variables):
     (x,y) = variables
@@ -392,7 +382,7 @@ while gameactive:
             score_value_player1 += 1
         if wall == 4:
             score_value_player2 += 1
-        sound.play()
+        #sound.play()
         oldbgc_x = ballgeodesiccenter_x
         oldbgc_y = ballgeodesiccenter_y
         oldbgrad = ballgeodesicradius
