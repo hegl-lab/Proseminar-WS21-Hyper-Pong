@@ -71,6 +71,9 @@ ballgeodesicradius = 0
 helppoint_x = 0
 helppoint_y = 0
 
+# shows wether the ball will be reset or not
+start = True
+
 def distance(z0,z1):
     distance = cmath.acosh(1+2*(abs(z0-z1)**2)/((1-abs(z0)**2)*(1-abs(z1)**2)))
     return abs(distance)
@@ -225,49 +228,8 @@ def ball_radius(x,y):
         return 0
     else:
         return round(15-(15*sqrt((x - 401)**2 + (y- 401)**2))/300)
-	
-#we need to find the wall of the nextintersection
-def findsolution():
-    global wall, solution
-    warnings.simplefilter('error', RuntimeWarning)
-    lastwall = wall
-    if lastwall == 1:
-        try:
-            wall = 2
-            solution = opt.fsolve(wallplayer2intersection, (0.1,0.1))
-            print("try")
-        except RuntimeWarning:
-            wall = 3
-            soltion = opt.fsolve(walldownintersection, (0.1,0.1))
-            print("except")
-    elif lastwall == 2:
-        try:
-            wall = 3
-            solution = opt.fsolve(walldownintersection, (0.1,0.1))
-            print("try")
-        except RuntimeWarning:
-            wall = 4
-            solution = opt.fsolve(wallplayer1intersection, (0.1,0.1))
-            print("except")
-    elif lastwall == 3:
-        try:
-            wall = 4
-            solution = opt.fsolve(wallplayer1intersection, (0.1,0.1))
-            print("try")
-        except RuntimeWarning:
-            wall = 1
-            solution = opt.fsolve(wallupintersection, (0.1,0.1))
-            print("except 3")
-    elif lastwall == 4:
-        try:
-            wall = 1
-            solution = opt.fsolve(wallupintersection, (0.1,0.1))
-            print("try")
-        except RuntimeWarning:
-            wall = 2
-            solution = opt.fsolve(wallplayer2intersection, (0.1,0.1))
-            print("except")
 
+#we need to find the wall of the nextintersection
 def findsolution2():
     global wall, solution
     warnings.simplefilter('error', RuntimeWarning)
@@ -345,13 +307,13 @@ def game_over_text():
     screen.blit(over_text, (200, 250))
 
 #create a start geodesic
-newgeodesic()
+#newgeodesic()
 
 # represents the point of the current intersection point with one of the walls
-solution = opt.fsolve(wallplayer2intersection, (0.1,1) )
-oldsolution = solution
-nextintersection = topygamecoords(solution[0], solution[1])
-wall = 2 #variable to what wall the ball moves
+#solution = opt.fsolve(wallplayer2intersection, (0.1,1) )
+#oldsolution = solution
+#nextintersection = topygamecoords(solution[0], solution[1])
+#wall = 2 #variable to what wall the ball moves
 direction = 1
 pseudopos = (0,0)
 
@@ -370,7 +332,7 @@ angle_rot2 = 0
 image = pygame.image.load('paddle.jpg')
 image = pygame.transform.scale(image, (8,50))
 paddle1 = image
-#otherwise we'll get a background for the image 
+#otherwise we'll get a background for the image
 image.set_colorkey((0,0,0))
 
 image = pygame.image.load('paddle.jpg')
@@ -392,6 +354,14 @@ while gameactive:
             gameactive = False
 
     # integrate game logic here
+    if start == True:
+        newgeodesic()
+        solution = opt.fsolve(wallplayer2intersection, (0.1,1) )
+        oldsolution = solution
+        nextintersection = topygamecoords(solution[0], solution[1])
+        wall = 2 #variable to what wall the ball moves
+        start = False
+
     helpballpos = newballpos(ballgeodesiccenter_x, ballgeodesiccenter_y, ballgeodesicradius, movement)
     movement +=  direction * 0.001/ballgeodesicradius
     ballpos = topygamecoords(helpballpos[0], helpballpos[1])
@@ -401,8 +371,10 @@ while gameactive:
     if (ballpos[0] - nextintersection[0])**2 + (ballpos[1] - nextintersection[1])**2 <= ballradius**2:
         if wall == 2:
             score_value_player1 += 1
+            start = True
         if wall == 4:
             score_value_player2 += 1
+            start = True
         #sound.play()
         oldbgc_x = ballgeodesiccenter_x
         oldbgc_y = ballgeodesiccenter_y
@@ -415,6 +387,7 @@ while gameactive:
         oldsolution = solution
         findsolution2()
         nextintersection = topygamecoords(solution[0],solution[1])
+        #Karina said to write a comment here :)
 
     # delete gamefield
     screen.fill(black)
@@ -424,10 +397,7 @@ while gameactive:
 
     #paddles
 
-    #newballpos(center_x, center_y, radius, t): newballpos = [center_x + radius*cos(2*pi*t), center_y + radius*sin(2*pi*t)]
-    
-    pygame.draw.circle(screen, orange, [401,401],300)
-    
+    #move a paddle
     c1=newballpos(x1,y1,400,angle1)
     blitRotate(screen, paddle1, (c1[0],c1[1]), (w1/2,h1/2), angle_rot1)
     key_input = pygame.key.get_pressed()
@@ -438,7 +408,7 @@ while gameactive:
         angle_rot1 -= 3
         angle1 += 0.008
 
-    
+
     c2=newballpos(x2,y2,-400,angle2)
     blitRotate(screen, paddle2, (c2[0],c2[1]), (w2/2,h2/2), angle_rot2)
     key_input = pygame.key.get_pressed()
@@ -452,7 +422,6 @@ while gameactive:
     help = topygamecoords(helppoint_x, helppoint_y)
     sol  = topygamecoords(solution[0], solution[1])
     pseudo = topygamecoords(pseudopos[0], pseudopos[1])
-
     # draw gamefield and figures
     pygame.draw.circle(screen, green,[topygamecoords(0,1.75)[0],topygamecoords(0,1.75)[1]],topygameradius(wallradius),5)
     pygame.draw.circle(screen, green,[topygamecoords(0,-1.75)[0],topygamecoords(0,-1.75)[1]],topygameradius(wallradius),5)
@@ -473,7 +442,7 @@ while gameactive:
     pygame.display.update()
 
     # set refreshing time
-    clock.tick(60)
+    clock.tick(60)#normal 60
 
 pygame.quit()
 quit()
