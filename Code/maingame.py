@@ -317,11 +317,6 @@ def game_over_text():
 direction = 1
 pseudopos = (0,0)
 
-x1=topygamecoords(-1.75,0)[0]
-y1=topygamecoords(-1.75,0)[1]
-
-x2=topygamecoords(1.75,0)[0]
-y2=topygamecoords(1.75,0)[1]
 
 angle1 = 0
 angle_rot1 = 0
@@ -344,7 +339,7 @@ w1, h1 = paddle1.get_size()
 w2, h2 = paddle2.get_size()
 
 #screen.blit(image,(200,401))
-
+print("Helloooo:",topygamecoords(-0.585, -0.585))
 
 # loop of main programm
 while gameactive:
@@ -397,27 +392,49 @@ while gameactive:
 
     #paddles
 
-    #move a paddle
-    c1=newballpos(x1,y1,400,angle1)
-    blitRotate(screen, paddle1, (c1[0],c1[1]), (w1/2,h1/2), angle_rot1)
+    #move paddle of player 1
+    c1=newballpos(wallplayer1center_x,wallplayer1center_y,sqrt(1.8),angle1)
+    c1_py = topygamecoords(c1[0], c1[1])
+    blitRotate(screen, paddle1, (c1_py[0],c1_py[1]), (w1/2,h1/2), angle_rot1)
     key_input = pygame.key.get_pressed()
-    if key_input[pygame.K_w]:
-        angle_rot1 += 3
-        angle1 -= 0.008
-    if key_input[pygame.K_s]:
-        angle_rot1 -= 3
-        angle1 += 0.008
+    #0.66 = (248 - height of paddle) /300
+    if abs(c1[0]+1j*c1[1]) <= 0.66:
+        if key_input[pygame.K_w]:
+            angle_rot1 += 3
+            angle1 += 0.008
+        if key_input[pygame.K_s]:
+            angle_rot1 -= 3
+            angle1 -= 0.008
+    elif c1[1] < 0:
+        if key_input[pygame.K_w]:
+            angle_rot1 += 3
+            angle1 += 0.008
+    elif c1[1] > 0:
+        if key_input[pygame.K_s]:
+            angle_rot1 -= 3
+            angle1 -= 0.008
 
-
-    c2=newballpos(x2,y2,-400,angle2)
-    blitRotate(screen, paddle2, (c2[0],c2[1]), (w2/2,h2/2), angle_rot2)
+    #move paddle of player 2
+    c2=newballpos(wallplayer2center_x, wallplayer2center_y, -sqrt(1.8), angle2)
+    c2_py = topygamecoords(c2[0], c2[1])
+    blitRotate(screen, paddle2, (c2_py[0],c2_py[1]), (w2/2,h2/2), angle_rot2)
     key_input = pygame.key.get_pressed()
-    if key_input[pygame.K_DOWN]:
-        angle_rot2 += 3
-        angle2 -= 0.008
-    if key_input[pygame.K_UP]:
-        angle_rot2 -= 3
-        angle2 += 0.008
+    if abs(c2[0]+1j*c2[1]) <= 0.66:
+        if key_input[pygame.K_DOWN]:
+            angle_rot2 += 3
+            angle2 += 0.008
+        if key_input[pygame.K_UP]:
+            angle_rot2 -= 3
+            angle2 -= 0.008
+    elif c2[1] < 0:
+        if key_input[pygame.K_UP]:
+            angle_rot2 -= 3
+            angle2 -= 0.008
+    elif c2[1] > 0:
+        if key_input[pygame.K_DOWN]:
+            angle_rot2 += 3
+            angle2 += 0.008
+
 
     help = topygamecoords(helppoint_x, helppoint_y)
     sol  = topygamecoords(solution[0], solution[1])
