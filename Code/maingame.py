@@ -229,6 +229,12 @@ def ball_radius(x,y):
     else:
         return round(15-(15*sqrt((x - 401)**2 + (y- 401)**2))/300)
 
+def paddle_scaling(x,y):
+     if sqrt((x-401)**2 + (y-401)**2) >=300:
+         return (0,0)
+     else:
+         return (round(16-(16*sqrt((x - 401)**2 + (y- 401)**2))/300), 90-(90*sqrt((x - 401)**2 + (y- 401)**2))/300)
+
 #we need to find the wall of the nextintersection
 def findsolution2():
     global wall, solution
@@ -413,7 +419,8 @@ while gameactive:
         if key_input[pygame.K_s]:
             angle_rot1 -= 3
             angle1 -= 0.008
-
+    paddle1 = pygame.transform.scale(paddle1, paddle_scaling(c1_py[0],c1_py[1]))
+    
     #move paddle of player 2
     c2=newballpos(wallplayer2center_x, wallplayer2center_y, -sqrt(1.8), angle2)
     c2_py = topygamecoords(c2[0], c2[1])
@@ -434,8 +441,8 @@ while gameactive:
         if key_input[pygame.K_DOWN]:
             angle_rot2 += 3
             angle2 += 0.008
-
-
+    paddle2 = pygame.transform.scale(paddle2, paddle_scaling(c2_py[0],c2_py[1]))
+    
     help = topygamecoords(helppoint_x, helppoint_y)
     sol  = topygamecoords(solution[0], solution[1])
     pseudo = topygamecoords(pseudopos[0], pseudopos[1])
