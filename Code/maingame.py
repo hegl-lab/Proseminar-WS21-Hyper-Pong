@@ -4,7 +4,9 @@ import numpy as np
 import scipy.optimize as opt
 import pygame
 import warnings
+from random import uniform
 from PDneu import *
+
 
 # initialising pygame
 pygame.init()
@@ -71,6 +73,8 @@ ballgeodesicradius = 0
 helppoint_x = 0
 helppoint_y = 0
 
+movement = 0
+
 # shows wether the ball will be reset or not
 start = True
 
@@ -98,8 +102,8 @@ def xy_to_PD(x,y):
     return(z)
 
 def PD_to_xy(point):
-    x = point.getReal()
-    y = point.getImag()
+    x = point.getRealPart()
+    y = point.getImagPart()
     return (x,y)
 
 def newballpos(center_x, center_y, radius, t):
@@ -186,14 +190,71 @@ def wallplayer2intersection(variables):
     return [first_eq, second_eq]
 
 def newgeodesic():
-    global ballgeodesiccenter_x, ballgeodesiccenter_y, ballgeodesicradius
-    p1 = xy_to_PD(0.3, 0.4)
-    p2 = xy_to_PD(0.45, 0.2)
+    global ballgeodesiccenter_x, ballgeodesiccenter_y, ballgeodesicradius, movement, wall, solution
+    rd = [None, None, None, None]
+    for i in range(4):
+        rd[i] = uniform(-1.75 + np.sqrt(1.7), 1.75 - np.sqrt(1.7))
+    p1 = xy_to_PD(rd[0], rd[1])
+    p2 = xy_to_PD(rd[2], rd[3])
+    
     g = PDGeodesic(p1,p2)
+    #p1 = xy_to_PD(0.3, 0.4)
+    #p2 = xy_to_PD(0.45, 0.2)
+    #g = PDGeodesic(p1,p2)
     center = g._center.getComplex()
     ballgeodesiccenter_x = center.real
     ballgeodesiccenter_y = center.imag
     ballgeodesicradius = g._radius
+    p1 = PD_to_xy(p1)
+    p2 = PD_to_xy(p2)
+    
+    movement = atan2(p1[1]- ballgeodesiccenter_y, p2[0] - ballgeodesiccenter_x)/(2*pi)
+    
+    warnings.simplefilter('error', RuntimeWarning)
+    solutions = [None, None, None, None]
+    try:
+        solutions[0]= opt.fsolve(wallupintersection, (0.1,0.1))
+    except RuntimeWarning:
+        solutions[0]= None
+    try:
+        solutions[1]= opt.fsolve(wallplayer2intersection, (0.1,0.1))
+    except RuntimeWarning:
+        solutions[1]= None
+    try:
+        solutions[2]= opt.fsolve(walldownintersection, (0.1,0.1))
+    except RuntimeWarning:
+        solutions[2]= None
+    try:
+        solutions[3]= opt.fsolve(wallplayer1intersection, (0.1,0.1))
+    except RuntimeWarning:
+        solutions[3]= None
+    print ("Solutions: " , solutions)
+    if solutions[0] is None and solutions[1] is None and solutions[2] is None and solutions[3] is None:
+        print("Error")
+        raise RuntimeError()
+
+    min = None
+    j = 0
+    for i in range(4):
+        if solutions[i] is None:
+            continue
+        else:
+            dist = distance(p1[0]+ p1[1]*1j, solutions[i][0] + solutions[i][1]*1j)
+            if min == None:
+                if dist > 1.0e-15:
+                    min = dist
+                    j = i
+            else:
+                if dist < min and dist > 1.0e-15:
+                    min = dist
+                    j = i
+        wall = j+1
+        solution = solutions[j]
+    #helpballpos = newballpos(ballgeodesiccenter_x, ballgeodesiccenter_y, ballgeodesicradius, movement)
+    #ballpos = topygamecoords(p1[0], p1[1])
+    #ballradius = ball_radius(ballpos[0], ballpos[1])
+
+     
 
 #function to change current ballgeodesic
 def ballgeodesic(wall):
@@ -357,10 +418,13 @@ while gameactive:
     # integrate game logic here
     if start == True:
         newgeodesic()
-        solution = opt.fsolve(wallplayer2intersection, (0.1,1) )
+        #solution = opt.fsolve(wallplayer2intersection, (0.1,1) )
         oldsolution = solution
+       
+        
         nextintersection = topygamecoords(solution[0], solution[1])
-        wall = 2 #variable to what wall the ball moves
+        print(solution)
+        #wall = 2 #variable to what wall the ball moves
         start = False
 
     helpballpos = newballpos(ballgeodesiccenter_x, ballgeodesiccenter_y, ballgeodesicradius, movement)
@@ -372,10 +436,10 @@ while gameactive:
     if (ballpos[0] - nextintersection[0])**2 + (ballpos[1] - nextintersection[1])**2 <= ballradius**2:
         if wall == 2:
             score_value_player1 += 1
-            start = True
+            #start = True
         if wall == 4:
             score_value_player2 += 1
-            start = True
+            #start = True
         #sound.play()
         oldbgc_x = ballgeodesiccenter_x
         oldbgc_y = ballgeodesiccenter_y
@@ -390,7 +454,7 @@ while gameactive:
         nextintersection = topygamecoords(solution[0],solution[1])
         #Karina said to write a comment here :)
 
-    # delete gamefield
+    # #delete gamefield
     screen.fill(black)
 
     # draw gamefield and figures
