@@ -474,8 +474,8 @@ while gameactive:
     #ball bounces of paddle 2
     #1.8 is the radius of the paddle geodesic
     if ballpos[0] >= c2_py[0] - paddle2.get_width()/2 and c2_py[1] - paddle2.get_height()/2 <= ballpos[1] <= c2_py[1] + paddle2.get_height()/2:
-    #    solution = helpballpos
-        #wall = 2
+        solution = helpballpos
+        wall = 2
         print("Help:", helpballpos)
         print("Solution:",solution)
         #sound.play()
