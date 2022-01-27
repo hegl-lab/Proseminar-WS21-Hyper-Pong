@@ -122,18 +122,27 @@ def ballgeodesic(wall):
     ballgeodesiccenter_y = center.imag
     ballgeodesicradius = g._radius
 
+#euclidean
+#def ball_radius(x,y):
+#    if sqrt((x - 401)**2 + (y- 401)**2) >= 300:
+#        return 0
+#    else:
+#        return round(15-(15*sqrt((x - 401)**2 + (y- 401)**2))/300)
+
+#hyperbolic
 def ball_radius(x,y):
-    if sqrt((x - 401)**2 + (y- 401)**2) >= 300:
-        return 0
-    else:
-        return round(15-(15*sqrt((x - 401)**2 + (y- 401)**2))/300)
+    z0=x+y*1j    
+    z1=0
+    return round(5*(1/distance(z0,z1)))
+
 
 def blitRotate(surf, image, pos, originPos, angle):
-    # offset from pivot to center
+    #to get the left corner of the image
     image_rect = image.get_rect(topleft = (pos[0] - originPos[0], pos[1]-originPos[1]))
     offset_center_to_pivot = pygame.math.Vector2(pos) - image_rect.center
 
-    # roatated offset from pivot to center
+    #rotated offset from pivot to center; 
+    #vector2 function rotates in the opposite direction than transform
     rotated_offset = offset_center_to_pivot.rotate(-angle)
 
     # rotated image center
@@ -273,12 +282,20 @@ def newgeodesic(x1, y1, x2, y2):
     ballgeodesiccenter_y = center.imag
     ballgeodesicradius = g._radius
 
-def paddle_scaling(x,y):
-     if sqrt((x-401)**2 + (y-401)**2) >=300:
-         return (0,0)
-     else:
-         return (round(16-(16*sqrt((x - 401)**2 + (y- 401)**2))/300), 90-(90*sqrt((x - 401)**2 + (y- 401)**2))/300)
+#euclidean
+#def paddle_scaling(x,y):
+#     if sqrt((x-401)**2 + (y-401)**2) >=300:
+#         return (0,0)
+#     else:
+#         return (round(16-(16*sqrt((x - 401)**2 + (y- 401)**2))/300), 90-(90*sqrt((x - 401)**2 + (y- 401)**2))/300)
 
+#hyperbolic
+def paddle_scaling(x,y):
+    z0=x+y*1j
+    z1=0
+    print(round(16*1/distance(z0,z1),90*1/distance(z0,z1)))
+    return round(16*1/distance(z0,z1),90*1/distance(z0,z1))
+ 
 def PD_to_xy(point):
     x = point.getReal()
     y = point.getImag()
