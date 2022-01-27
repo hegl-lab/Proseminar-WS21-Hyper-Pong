@@ -133,7 +133,7 @@ def ballgeodesic(wall):
 def ball_radius(x,y):
     z0=x+y*1j    
     z1=0
-    return round(5*(1/distance(z0,z1)))
+    return round(5*(1/distance(z0,z1))
 
 
 def blitRotate(surf, image, pos, originPos, angle):
@@ -293,8 +293,7 @@ def newgeodesic(x1, y1, x2, y2):
 def paddle_scaling(x,y):
     z0=x+y*1j
     z1=0
-    print(round(16*1/distance(z0,z1),90*1/distance(z0,z1)))
-    return round(16*1/distance(z0,z1),90*1/distance(z0,z1))
+    return (round(16*1/distance(z0,z1)),round(90*1/distance(z0,z1)))
  
 def PD_to_xy(point):
     x = point.getReal()
