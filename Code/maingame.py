@@ -133,8 +133,7 @@ def ballgeodesic(wall):
 def ball_radius(x,y):
     z0=x+y*1j    
     z1=0
-    return round(5*(1/distance(z0,z1))
-
+    return round(5*(1/distance(z0,z1)))
 
 def blitRotate(surf, image, pos, originPos, angle):
     #to get the left corner of the image
