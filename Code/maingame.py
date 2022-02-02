@@ -126,7 +126,6 @@ def ballgeodesic(wall):
         helppoint(solution[0], solution[1], wallupcenter_x, wallupcenter_y)
     elif wall == 2:
         helppoint(solution[0], solution[1], wallplayer2center_x, wallplayer2center_y)
-        print("Helppopint:", helppoint_x, helppoint_y)
     elif wall == 3:
         helppoint(solution[0], solution[1], walldowncenter_x, walldowncenter_y)
     elif wall == 4:
@@ -143,10 +142,10 @@ def ballgeodesic(wall):
 
 #calculates a ball radius depending on the distance to the center
 def ball_radius(x,y):
-    if sqrt((x - 401)**2 + (y- 401)**2) >= 300:
+    if sqrt(x**2 + y**2) >= 1:
         return 0
     else:
-        return round(15-(15*sqrt((x - 401)**2 + (y- 401)**2))/300)
+        return 15*(1-(x**2 + y**2))
 
 #originPos is position of the mid point in the rectangle (not using cords just general length of the rectangle)
 #pos is the postion the origin is supposed to have
@@ -206,11 +205,11 @@ def findsolution2():
         else:
             dist = distance(oldsolution[0]+ oldsolution[1]*1j, solutions[i][0] + solutions[i][1]*1j)
             if min == None:
-                if dist > 1.0e-15:
+                if dist > 1.0e-15 and abs(solutions[i][0] + solutions[i][1]*1j) <= 0.8:
                     min = dist
                     j = i
             else:
-                if dist < min and dist > 1.0e-15:
+                if dist < min and dist > 1.0e-15 and abs(solutions[i][0] + solutions[i][1]*1j) <= 0.8:
                     min = dist
                     j = i
         wall = j+1
@@ -243,13 +242,13 @@ def helppoint(solution_x, solution_y, center_x, center_y):
         m_tangent = 1/n #tangent
 
         if center_x == walldowncenter_x and center_y == walldowncenter_y :
-            b_tangent = solution_y - m_tangent*solution_x + 0.001
+            b_tangent = solution_y - m_tangent*solution_x + 0.0001
         elif center_x == wallupcenter_x and center_y == wallupcenter_y :
-            b_tangent = solution_y - m_tangent*solution_x - 0.001
+            b_tangent = solution_y - m_tangent*solution_x - 0.0001
         elif center_x == wallplayer1center_x and center_y == wallplayer1center_y :
-            b_tangent = solution_y - m_tangent*solution_x - 0.001
+            b_tangent = solution_y - m_tangent*solution_x - 0.0001
         elif center_x == wallplayer2center_x and center_y == wallplayer2center_y :
-            b_tangent = solution_y - m_tangent*solution_x + 0.001
+            b_tangent = solution_y - m_tangent*solution_x + 0.0001
 
         helpsolve = opt.fsolve(helptangent, (solution_x,solution_y))
         orthintersect_y = m_tangent*(b_orthogonal - b_tangent)/(m_tangent - n) + b_tangent
@@ -302,10 +301,10 @@ def newgeodesic(x1, y1, x2, y2):
 
 #making the paddle get smaller depending on the distance to the center
 def paddle_scaling(x,y):
-     if sqrt((x-401)**2 + (y-401)**2) >=300:
-         return (0,0)
-     else:
-         return (round(16-(16*sqrt((x - 401)**2 + (y- 401)**2))/300), 90-(90*sqrt((x - 401)**2 + (y- 401)**2))/300)
+    if sqrt((x- 401)**2 + (y - 401)**2) >=300:
+        return (0,0)
+    else:
+        return (round(16-(16*sqrt((x - 401)**2 + (y- 401)**2)/300)), round(90-(90*sqrt((x-401)**2 + (y-401)**2)/300)))
 
 #makes a PD point and finds the fitting (x,y) point
 def PD_to_xy(point):
@@ -320,7 +319,7 @@ def pseudorand():
     x = np.random.random_integers(1,10)
     if x == 1:
         newgeodesic(0.3, 0.4, 0.45, 0.2)
-        movement = 0.55
+        movement = 0.60
         direction = 1
         wall = 2
         solution = opt.fsolve(wallplayer2intersection, (0.1,1) )
@@ -333,23 +332,23 @@ def pseudorand():
         solution = opt.fsolve(wallplayer2intersection, (0.1,1) )
         oldsolution = solution
     if x == 3:
-        newgeodesic(0.1, -0.5, -0.22, 0.3)
-        movement = 0.075
-        direction = -1
-        wall = 3
-        solution = opt.fsolve(walldownintersection, (0.1,1))
+        newgeodesic(-0.12, -0.11, -0.45, -0.2)
+        movement = 0.275
+        direction = 1
+        wall = 4
+        solution = opt.fsolve(wallplayer1intersection, (0.1,1))
         oldsolution = solution
     if x == 4:
-        newgeodesic(-0.1, 0.22, -0.3, -0.5)
-        movement = 0.95
+        newgeodesic(-0.05, 0.22, -0.3, -0.5)
+        movement = -0.04
         direction = -1
         wall = 3
         solution = opt.fsolve(walldownintersection, (0.1,1))
         oldsolution = solution
     if x == 5:
-        newgeodesic(0.4473, -0.2192, 0.1314, 0.1148)
-        movement = -0.407
-        direction = 1
+        newgeodesic(0.4473, -0.2192, 0.1314, -0.1148)
+        movement = -0.8
+        direction = -1
         wall = 2
         solution = opt.fsolve(wallplayer2intersection, (0.1,1))
         oldsolution = solution
@@ -382,11 +381,11 @@ def pseudorand():
         solution = opt.fsolve(walldownintersection, (0.1, 1))
         oldsolution = solution
     if x == 10:
-        newgeodesic(0.49724327788023603, -0.08821411300225304, 0.3979699661972468, -0.16290072071756773)
-        movement = 0.3974
-        direction = -1
-        wall = 2
-        solution = opt.fsolve(wallplayer2intersection, (0.1, 1))
+        newgeodesic(-0.497, -0.088, -0.398, -0.163)
+        movement = 0.1
+        direction = 1
+        wall = 4
+        solution = opt.fsolve(wallplayer1intersection, (0.1, 1))
         oldsolution = solution
 
 #shows current score of player 1 and player 2
@@ -402,19 +401,6 @@ def topygamecoords(xcord, ycord):
 #function to calculate radius into pygame radius
 def topygameradius(radius):
     return 300*radius
-
-#change center depending on the wall (see newgeodesic)
-def wallcntr(wall):
-    global wallcenter
-    if(wall == 1):
-        wallcenter = (wallupcenter_x, wallupcenter_y)
-    if(wall == 2):
-        wallcenter = (wallplayer2center_x, wallplayer2center_y)
-    if(wall == 3):
-        wallcenter = (walldowncenter_x, walldowncenter_y)
-    if(wall == 4):
-        wallcenter = (wallplayer1center_x, wallplayer1center_y)
-    return(wallcenter)
 
 #finds the solution to the lower wall
 def walldownintersection(variables):
@@ -487,12 +473,11 @@ while gameactive:
 
         helpballpos = newballpos(ballgeodesiccenter_x, ballgeodesiccenter_y, ballgeodesicradius, movement)
         if ballgeodesicradius == 0:
-            movement += direction * 0.001/maxrad
+            movement += direction * 0.001*((score_value_player1 + score_value_player2)/4 + 1)/maxrad
         else:
-            movement +=  direction * 0.001/ballgeodesicradius
+            movement +=  direction * 0.001*((score_value_player1 + score_value_player2)/4 + 1)/ballgeodesicradius
         ballpos = topygamecoords(helpballpos[0], helpballpos[1])
-        ballradius = ball_radius(ballpos[0], ballpos[1])
-
+        ballradius = ball_radius(helpballpos[0], helpballpos[1])
         #makes the ball switch geodesics when hitting a wall
         if (ballpos[0] - nextintersection[0])**2 + (ballpos[1] - nextintersection[1])**2 <= ballradius**2 and (wall == 1 or wall == 3):
             if wall == 1:
@@ -522,6 +507,10 @@ while gameactive:
         elif (helpballpos[0] - wallplayer1center_x)**2 + (helpballpos[1] - wallplayer1center_y)**2 <= wallrad(4)**2 and wall == 4:
             score_value_player2 += 1
             start = True
+        elif (helpballpos[0] - wallupcenter_x)**2 + (helpballpos[1] - wallupcenter_y)**2 < wallrad(1)**2 - 0.1:
+            start = True
+        elif (helpballpos[0] - walldowncenter_x)**2 + (helpballpos[1] - walldowncenter_y)**2 < wallrad(3)**2 - 0.1:
+            start = True
         # delete gamefield
         screen.fill(black)
 
@@ -535,18 +524,12 @@ while gameactive:
         blitRotate(screen, paddle1, (c1_py[0],c1_py[1]), (w1/2,h1/2), angle_rot1)
         key_input = pygame.key.get_pressed()
         #0.66 = (248 - height of paddle) /300
-        if abs(c1[0]+1j*c1[1]) <= 0.66:
+        x = paddle1.get_height()
+        if abs(c1[0]+1j*c1[1]) <= 0.66 or c1[1] < 0:
             if key_input[pygame.K_w]:
                 angle_rot1 += 3
                 angle1 += 0.008
-            if key_input[pygame.K_s]:
-                angle_rot1 -= 3
-                angle1 -= 0.008
-        elif c1[1] < 0:
-            if key_input[pygame.K_w]:
-                angle_rot1 += 3
-                angle1 += 0.008
-        elif c1[1] > 0:
+        if abs(c1[0]+1j*c1[1]) <= 0.8 or c1[1] > 0:
             if key_input[pygame.K_s]:
                 angle_rot1 -= 3
                 angle1 -= 0.008
@@ -557,18 +540,12 @@ while gameactive:
         c2_py = topygamecoords(c2[0], c2[1])
         blitRotate(screen, paddle2, (c2_py[0],c2_py[1]), (w2/2,h2/2), angle_rot2)
         key_input = pygame.key.get_pressed()
-        if abs(c2[0]+1j*c2[1]) <= 0.66:
-            if key_input[pygame.K_DOWN]:
-                angle_rot2 += 3
-                angle2 += 0.008
+        y = paddle2.get_height()
+        if abs(c2[0]+1j*c2[1]) <= 0.66 or c2[1] < 0:
             if key_input[pygame.K_UP]:
                 angle_rot2 -= 3
                 angle2 -= 0.008
-        elif c2[1] < 0:
-            if key_input[pygame.K_UP]:
-                angle_rot2 -= 3
-                angle2 -= 0.008
-        elif c2[1] > 0:
+        if abs(c2[0]+1j*c2[1]) <= 0.75 or c2[1] > 0:
             if key_input[pygame.K_DOWN]:
                 angle_rot2 += 3
                 angle2 += 0.008
@@ -576,7 +553,7 @@ while gameactive:
 
         #ball bounces of paddle 1
         #1.8 is the radius of the paddle geodesic
-        if c1_py[0] - paddle1.get_width()/2 <= nextintersection[0] <= c1_py[0] + paddle1.get_width()/2 and c1_py[1] - paddle1.get_height()/2 <= nextintersection[1] <= c1_py[1] + paddle1.get_height()/2 and (ballpos[0] - nextintersection[0])**2 + (ballpos[1] - nextintersection[1])**2 <= ballradius**2:
+        if c1_py[0] - paddle1.get_width()/2 - ballradius <= nextintersection[0] <= c1_py[0] + paddle1.get_width()/2 + ballradius and c1_py[1] - paddle1.get_height()/2 - ballradius <= nextintersection[1] <= c1_py[1] + paddle1.get_height()/2 + ballradius and (ballpos[0] - nextintersection[0])**2 + (ballpos[1] - nextintersection[1])**2 <= ballradius**2:
             #sound.play()
             ballgeodesic(wall)
             movement = atan2(solution[1]- ballgeodesiccenter_y, solution[0] - ballgeodesiccenter_x)/(2*pi)
@@ -593,7 +570,7 @@ while gameactive:
 
         #ball bounces of paddle 2
         #1.8 is the radius of the paddle geodesic
-        if c2_py[0] + paddle2.get_width()/2 >= nextintersection[0] >= c2_py[0] - paddle2.get_width()/2 and c2_py[1] - paddle2.get_height()/2 <= nextintersection[1] <= c2_py[1] + paddle2.get_height()/2 and (ballpos[0] - nextintersection[0])**2 + (ballpos[1] - nextintersection[1])**2 <= ballradius**2:
+        if c2_py[0] + paddle2.get_width()/2 + ballradius >= nextintersection[0] >= c2_py[0] - paddle2.get_width()/2 - ballradius and c2_py[1] - paddle2.get_height()/2 - ballradius <= nextintersection[1] <= c2_py[1] + paddle2.get_height()/2 + ballradius and (ballpos[0] - nextintersection[0])**2 + (ballpos[1] - nextintersection[1])**2 <= ballradius**2:
         #sound.play()
             ballgeodesic(wall)
             movement = atan2(solution[1]- ballgeodesiccenter_y, solution[0] - ballgeodesiccenter_x)/(2*pi)
