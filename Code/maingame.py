@@ -259,26 +259,25 @@ def helppoint(solution_x, solution_y, center_x, center_y):
     elif center_y - solution_y == 0:
             if center_x == wallplayer1center_x and center_y == wallplayer1center_y :
                 helppoint_x = solution_x + 0.001
-                helppoint_y = 2*(solution_y) - sqrt(ballgeodesicradius**2 - (solution_x + 0.001 - ballgeodesiccenter_x)**2) - ballgeodesiccenter_y
+                helppoint_y = solution_y + 0.001
             elif center_x == wallplayer2center_x and center_y == wallplayer2center_y :
                 helppoint_x = solution_x - 0.001
-                helppoint_y = 2*(solution_y) - sqrt(ballgeodesicradius**2 - (solution_x - 0.001 - ballgeodesiccenter_x)**2) - ballgeodesiccenter_y
+                helppoint_y = solution_y - 0.001
             else:
                 print("Something went very wrong.")
     elif center_x - solution_x == 0:
             if center_x == walldowncenter_x and center_y == walldowncenter_y :
                 helppoint_y = solution_y + 0.001
-                helppoint_x = 2*(solution_x) - sqrt(ballgeodesicradius**2 - (solution_y + 0.001 - ballgeodesiccenter_y)**2) - ballgeodesiccenter_x
+                helppoint_x = solution_x - 0.001
             elif center_x == wallupcenter_x and center_y == wallupcenter_y :
                 helppoint_y = solution_y - 0.001
-                helppoint_x = 2*(solution_x) - sqrt(ballgeodesicradius**2 - (solution_y + 0.001 - ballgeodesiccenter_y)**2) - ballgeodesiccenter_x
+                helppoint_x = solution_x + 0.001
             else:
                 print("Something went very wrong.")
 
 #calculates the neccessary
 def helptangent(variables):
     (x,y) = variables
-
     first_eq = (x - ballgeodesiccenter_x)**2 + (y-ballgeodesiccenter_y)**2 - ballgeodesicradius**2
     second_eq = m_tangent*x + b_tangent - y
     return [first_eq, second_eq]
