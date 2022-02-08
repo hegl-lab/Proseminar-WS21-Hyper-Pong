@@ -18,7 +18,7 @@ turquoise = (0,206,209)
 grey = (112, 128, 144)
 red     = ( 153, 0, 0)
 green   = ( 0, 153, 0)
-blue = ( 0, 0, 153)
+blue = ( 72, 61, 139)
 black = ( 0, 0, 0)
 white   = ( 255, 255, 255)
 
@@ -514,7 +514,7 @@ while gameactive:
         screen.fill(black)
 
         # draw gamefield and figures
-        pygame.draw.circle(screen, turquoise, [401,401],300)
+        pygame.draw.circle(screen, blue, [401,401],300)
 
         #paddles
         #move paddle of player 1
@@ -592,7 +592,7 @@ while gameactive:
         pygame.draw.circle(screen, grey,[topygamecoords(wallupcenter_x,wallupcenter_y)[0],topygamecoords(wallupcenter_x,wallupcenter_y)[1]],topygameradius(wallup._radius),5)
         pygame.draw.circle(screen, grey,[topygamecoords(walldowncenter_x,walldowncenter_y)[0],topygamecoords(walldowncenter_x,walldowncenter_y)[1]],topygameradius(walldown._radius),5)
         pygame.draw.circle(screen, red,[topygamecoords(wallplayer1center_x,wallplayer1center_y)[0],topygamecoords(wallplayer1center_x,wallplayer1center_y)[1]],topygameradius(wallplayer1._radius),5)
-        pygame.draw.circle(screen, blue,[topygamecoords(wallplayer2center_x,wallplayer2center_y)[0],topygamecoords(wallplayer2center_x,wallplayer2center_y)[1]],topygameradius(wallplayer2._radius),5)
+        pygame.draw.circle(screen, turquoise,[topygamecoords(wallplayer2center_x,wallplayer2center_y)[0],topygamecoords(wallplayer2center_x,wallplayer2center_y)[1]],topygameradius(wallplayer2._radius),5)
         pygame.draw.circle(screen, ball_colour, [ballpos[0], ballpos[1]], ballradius)
         #the following drawings are for debugging purposes
         #pygame.draw.circle(screen, black,[topygamecoords(ballgeodesiccenter_x, ballgeodesiccenter_y)[0],topygamecoords(ballgeodesiccenter_x,ballgeodesiccenter_y)[1]],topygameradius(ballgeodesicradius),5)
