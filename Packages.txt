@@ -1,0 +1,9 @@
+Packages used for our ping pong game:
+
+Pygame 2.1.0
+
+Scipy 1.7.1
+
+Sympy 1.9
+
+Numpy 1.21.4
